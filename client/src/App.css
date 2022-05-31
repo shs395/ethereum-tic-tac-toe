@@ -32,3 +32,28 @@ td {
   text-align: center;
   font-size: 60px;
 }
+
+.gameItemImg {
+  width: 150px;
+  heigth: 150px;
+}
+
+.gameItem {
+  width:200px;
+  text-align:center;
+  display:block;
+  background-color: transparent;
+  border: 1px solid transparent;
+  margin-right: 10px;
+  margin-bottom: 1px;
+  float:left;
+}
+
+.shop {
+  display:block;
+  height: 700px;
+}
+
+.gameList {
+  display:block;
+}

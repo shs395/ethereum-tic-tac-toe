@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import GameAddressListContract from "./contracts/GameAddressList.json";
 import TicTacToeContract from "./contracts/TicTacToe.json";
+import GameItemContract from "./contracts/GameItem.json";
 import getWeb3 from "./getWeb3";
 import "./App.css";
 import TicTacToe from "./TicTacToe.js"
@@ -13,6 +14,7 @@ const App = () => {
   const [networkId , setNetworkId] = useState();
   const [test, setTest] = useState(0);
   const [betAmount, setBetAmount] = useState(0);
+  const [gameItemJson, setGameItemJson] = useState([]);
 
   // contracts 
   const [gameAddressListContract, setGameAddressListContract] = useState();
@@ -72,6 +74,31 @@ const App = () => {
       setGameAddressList(array);
 
     });
+
+    const gameItemDeployedNetwork = GameItemContract.networks[networkId];
+    let gameItemContract = new web3.eth.Contract(
+      GameItemContract.abi,
+      gameItemDeployedNetwork && gameItemDeployedNetwork.address,
+    )
+    let temp = [];
+    for(let i = 1; i <= 7; i++) {
+      let data = await gameItemContract.methods.uri(i).call();
+      let myQuantity = await gameItemContract.methods.balanceOf(
+        accounts[0],
+        i
+      ).call()
+      console.log(myQuantity)
+      // temp.push(data);
+      let response = await fetch(data);
+      let responseJson = await response.json();
+      let tempJson = {
+        "json": responseJson,
+        "myQuantity": myQuantity,
+      }
+      temp.push(tempJson)
+    }
+    setGameItemJson(temp);
+
     
   }
   const getGameAddressList = async () => {
@@ -125,6 +152,48 @@ const App = () => {
       />
     </div>
   )
+  const getGameItemJsonList = async () => {
+    const gameItemDeployedNetwork = GameItemContract.networks[networkId];
+    let gameItemContract = new web3.eth.Contract(
+      GameItemContract.abi,
+      gameItemDeployedNetwork && gameItemDeployedNetwork.address,
+    )
+    let temp = [];
+    for(let i = 1; i <= 7; i++) {
+      let data = await gameItemContract.methods.uri(i).call();
+      let myQuantity = await gameItemContract.methods.balanceOf(
+        accounts[0],
+        i
+      ).call()
+      console.log(myQuantity)
+      // temp.push(data);
+      let response = await fetch(data);
+      let responseJson = await response.json();
+      let tempJson = {
+        "json": responseJson,
+        "myQuantity": myQuantity,
+      }
+      temp.push(tempJson)
+    }
+    setGameItemJson(temp);
+  }
+
+  const gameItemList = gameItemJson.map((item) => 
+
+    <div className="gameItem">
+      <img className="gameItemImg" src={item.json.image}></img>
+      <p>{item.json.name}</p>
+      <p>{item.json.description}</p>
+      <p>보유 수량 : {item.myQuantity}</p> 
+      <button>구매하기</button> 
+    </div>
+   
+  )
+
+
+  const testf = async () => {
+    console.log("test")
+  }
 
   return(
     <div className="App">
@@ -140,10 +209,16 @@ const App = () => {
         ether
         <button onClick={makeGame}>방 만들기</button>
         <button onClick={getGameAddressList}>새로고침</button>
-        {/* <button onClick={testf}>테스트</button> */}
+        <button onClick={getGameItemJsonList}>테스트</button>
       </div>
-      <div>
-        게임리스트
+      <hr></hr>
+      <div className="shop">
+        <p>상점</p>
+        {gameItemList}
+      </div>
+      <hr></hr>
+      <div className="gameList">
+        <p>게임리스트</p>
         <hr></hr>
         {listItems}
       </div>
