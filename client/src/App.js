@@ -12,6 +12,7 @@ const App = () => {
   const [accounts, setAccounts] = useState();
   const [networkId , setNetworkId] = useState();
   const [test, setTest] = useState(0);
+  const [betAmount, setBetAmount] = useState(0);
 
   // contracts 
   const [gameAddressListContract, setGameAddressListContract] = useState();
@@ -99,7 +100,7 @@ const App = () => {
       data: TicTacToeContract.bytecode,
       // arguments: [100]
     }).send({
-      from: accounts[0],value: web3.utils.toWei('5')
+      from: accounts[0],value: web3.utils.toWei(betAmount)
     }, function(error, tx) {
 
     }).on('error', function(error){  })
@@ -130,6 +131,13 @@ const App = () => {
       <h1>eth-tic-tac-toe</h1>
       <div>현재 지갑 주소 : {accounts}</div> 
       <div>
+        betAmount : 
+        <input 
+          type="number"
+          value={betAmount}
+          onChange={(event) => setBetAmount(event.target.value)}
+        />
+        ether
         <button onClick={makeGame}>방 만들기</button>
         <button onClick={getGameAddressList}>새로고침</button>
         {/* <button onClick={testf}>테스트</button> */}

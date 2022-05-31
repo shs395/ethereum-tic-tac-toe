@@ -19,11 +19,15 @@ const TicTacToe = (props) => {
       updateGameStatus();
 
       ticTacToeContract.events.moveMade({}, async function(error, event){
-        console.log(event);
         updateGameStatus();
         updateBoard();
-  
       });
+
+      ticTacToeContract.events.gameStart({}, async function(error, event){
+        updateGameStatus();
+        updateBoard();
+      });
+
     } catch (error) {
       alert(
         `Failed to load web3, accounts, or contract. Check console for details.`,
@@ -78,7 +82,8 @@ const TicTacToe = (props) => {
 
   const joinGame = async () => {
     const ticTacToeContract = new web3.eth.Contract(TicTacToeContract.abi, gameAddress); 
-    await ticTacToeContract.methods.join().send({ from: accounts[0], value: web3.utils.toWei('5') });
+    let betAmount = gameStatus.betAmount / 10**18;
+    await ticTacToeContract.methods.join().send({ from: accounts[0], value: web3.utils.toWei(betAmount.toString()) });
   }
 
   return (
@@ -86,7 +91,11 @@ const TicTacToe = (props) => {
       <p>1P (O) : {gameStatus.player1}</p>
       <p>2P (X) : {gameStatus.player2}</p>
       <p>차례 : {gameStatus.whoseTurn}</p>
-      <p>gameover : {gameStatus.gameOver == true ? '게임 끝' : '게임 중'}</p>
+      <p>gameover : {
+        gameStatus.gameOver == true 
+        ? '게임 끝' : gameStatus.player2 == '0x0000000000000000000000000000000000000000' 
+        ? '게임 시작 대기 중' : '게임 중'
+      }</p>
       <p>승자 : {gameStatus.winner}</p>
       <p>참가비 : {gameStatus.betAmount / 10**18} 이더</p>
       <button onClick={joinGame}>참가하기</button>
