@@ -8,10 +8,12 @@
     "@emotion/styled": "^11.8.1",
     "@mui/icons-material": "^5.8.0",
     "@mui/material": "^5.8.1",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
-    "react-scripts": "3.2.0",
-    "web3": "^1.6.1"
+    "react": "^18.1.0",
+    "react-dom": "^18.1.0",
+    "react-scripts": "^4.0.3",
+    "web3": "^1.6.1",
+    "web-vitals": "^2.1.4",
+    "web3uikit": "^0.1.155"
   },
   "scripts": {
     "start": "react-scripts start",
