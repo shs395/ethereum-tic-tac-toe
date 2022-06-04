@@ -295,6 +295,13 @@ const App = () => {
     
   }
 
+  const claim = async (currentGameAddress) => {
+    const ticTacToeContract = new web3.eth.Contract(TicTacToeContract.abi, currentGameAddress); 
+    await ticTacToeContract.methods.claim().send({ from: accounts[0] });
+    
+
+  }
+
   const test = () => {
     console.log(gameAddressList);
     console.log(gameList);
@@ -476,26 +483,54 @@ const App = () => {
                       </tr>
                     </table>
                     <div id="game-button-outer">
-                      <Button
-                        id="test-button-primary"
-                        onClick={() => {
-                          joinGame(currentGameStatus.betAmount, currentGameAddress)
-                        }}
-                        size="large"
-                        text="Join Game"
-                        theme="primary"
-                        type="button"
-                      />
-                      <Button
-                        id="test-button-primary"
-                        onClick={() => {
-                          
-                        }}
-                        size="large"
-                        text="Claim"
-                        theme="primary"
-                        type="button"
-                      />
+                      {
+                        (currentGameStatus.player2 != 0) ?  
+                        <Button
+                          id="test-button-primary"
+                          onClick={() => {
+                          }}
+                          size="large"
+                          text="Join Game"
+                          theme="primary"
+                          type="button"
+                          disabled="true"
+                        /> :
+                        <Button
+                          id="test-button-primary"
+                          onClick={() => {
+                            joinGame(currentGameStatus.betAmount, currentGameAddress)
+                          }}
+                          size="large"
+                          text="Join Game"
+                          theme="primary"
+                          type="button"
+                        /> 
+                      } 
+                      {
+                        (currentGameStatus.gameOver == true && currentGameStatus.winner == accounts[0]) ? 
+                        <Button
+                          id="test-button-primary"
+                          onClick={() => {
+                            claim(currentGameAddress)
+                          }}
+                          size="large"
+                          text="Claim"
+                          theme="primary"
+                          type="button"
+                        /> :
+                        <Button
+                          id="test-button-primary"
+                          onClick={() => {
+                            claim(currentGameAddress)
+                          }}
+                          size="large"
+                          text="Claim"
+                          theme="primary"
+                          type="button"
+                          disabled="true"
+                        />
+
+                      }
                     </div>
                     
                   </div>
