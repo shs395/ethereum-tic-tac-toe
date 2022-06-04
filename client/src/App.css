@@ -5,7 +5,7 @@
 .App-logo {
   height: 40vmin;
 }
-
+/* 
 .App-header {
   background-color: #282c34;
   min-height: 100vh;
@@ -15,16 +15,17 @@
   justify-content: center;
   font-size: calc(10px + 2vmin);
   color: white;
-}
+} */
 
-.App-link {
+/* .App-link {
   color: #09d3ac;
-}
+} */
 
 
 table {
   border-collapse: collapse;
 }
+
 td {
   width: 80px;
   height: 80px;
@@ -57,3 +58,83 @@ td {
 .gameList {
   display:block;
 }
+
+
+
+
+
+.TabList {
+  align-items: center;
+  /* justify-content: center; */
+  /* margin: auto; */
+  width: 100%;
+  /* background-color: red; */
+  /* text-align: center; */
+  color: red;
+}
+
+
+.Tab {
+  /* background-color: green; */
+  color: red;
+}
+
+.page {
+  /* background-color: blue; */
+  color: red;
+}
+
+#typo {
+  margin-top: 30px;
+  margin-bottom: 10px;
+}
+
+#sub-typo {
+  color: gray;
+}
+
+#make-game-outer {
+  /* marign: auto; */
+  margin-bottom: 30px;
+  margin-top: 30px;
+  alignItems: center;
+  display: inline-flex;
+  height: 50px;
+  justifyContent: center;
+}
+
+#make-game-input {
+  height: 50px;
+}
+
+#make-game-button {
+  margin-left: 10px;
+  height: 42px;
+}
+#game-contract-address {
+  font-weight: bold;
+}
+
+#game-contract-address:hover { 
+  cursor: pointer; 
+  text-decoration: underline;
+}
+
+#game-button-outer {
+  alignItems: center;
+  display: inline-flex;
+  margin-top: 30px;
+}
+
+/* #table-outer {
+  margin-bottom: 30px;
+  margin-top: 30px;
+  alignItems: center;
+  display: inline-flex;
+  height: 50px;
+  justifyContent: center;
+}
+
+#table-inner {
+  
+} */
