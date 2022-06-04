@@ -62,10 +62,12 @@ contract TicTacToe {
                 if(board[temp[0]] == 1) {
                     gameOver = true;
                     winner = player1;
+                    whoseTurn = address(0);
                     emit gameEnd();
                 } else {
                     gameOver = true;
                     winner = player2;
+                    whoseTurn = address(0);
                     emit gameEnd();
                 }
             }
