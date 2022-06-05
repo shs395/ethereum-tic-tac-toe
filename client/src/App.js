@@ -767,8 +767,8 @@ const App = () => {
           className="Tab"
         >
           <Typography variant="h2">Erc-1155</Typography>
-          <button onClick={test}>test</button>
-          <button onClick={mint}>mint</button>
+          {/* <button onClick={test}>test</button>
+          <button onClick={mint}>mint</button> */}
           <p></p>
           {gameItemList}
         </Tab>
