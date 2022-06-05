@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import getWeb3 from "./getWeb3";
 import "./App.css";
-import { CryptoCards, Button, Tab, TabList, Card, Illustration, Table, Avatar, Tag, LinkTo, Typography, Input, Information, Row} from 'web3uikit';
+import { Button, Tab, TabList, Card, Illustration, Table, Avatar, Tag, LinkTo, Typography, Input, Information, Row} from 'web3uikit';
 import GameAddressListContract from "./contracts/GameAddressList.json";
 import TicTacToeContract from "./contracts/TicTacToe.json";
-import TicTacToe from "./TicTacToe.js";
+import GameItemContract from "./contracts/GameItem.json";
 const App = () => {
 
   const [web3, setWeb3] = useState(null);
@@ -20,6 +20,9 @@ const App = () => {
   const [currentGameBoard, setCurrentGameBoard] = useState([]);
   const [ticTacToeContract, setTicTacToeContract] = useState();
   const [betAmount, setBetAmount] = useState(0);
+  const [gameItemJson, setGameItemJson] = useState([]);
+  const [myGameItem, setMyGameItem] = useState([]);
+  const [mainItem, setMainItem] = useState();
 
   useEffect(() => {
     try {
@@ -71,21 +74,24 @@ const App = () => {
     console.log(gameList)
     let temp = [];
     
-    tempGameList.forEach((game) => {
-      temp.push(
-        [
-          <p id="game-contract-address" onClick={() => {selectGame(game.gameAddress)}}>{game.gameAddress.substr(0, 5)}...{game.gameAddress.substr(-5)}</p>,
-          <p>{game.status.player1.substr(0, 5)}...{game.status.player1.substr(-4)}</p>,
-          <p>{game.status.player2.substr(0, 5)}...{game.status.player2.substr(-4)}</p>,
-          <p>{game.status.betAmount / 10**18 * 2} ETH / {game.status.betAmount / 10**18} ETH</p>,
-          game.status.gameOver == true ? <p><Tag color="red" text="Game End" /></p> : game.status.player2 == 0 ? <p><Tag color="green" text="waiting for game" /></p> : <p><Tag color="blue" text="in game" /></p>,
-          game.status.winner == 0 ? <p></p> : <p>{game.status.winner.substr(0, 5)}...{game.status.winner.substr(-4)}</p>,
-        ]
-      )
-      console.log(temp)
-      
-    })
-    setGameTable(temp);
+    if(tempGameList != null) {
+      tempGameList.forEach((game) => {
+        temp.push(
+          [
+            <p id="game-contract-address" onClick={() => {selectGame(game.gameAddress)}}>{game.gameAddress.substr(0, 5)}...{game.gameAddress.substr(-5)}</p>,
+            <p>{game.status.player1.substr(0, 5)}...{game.status.player1.substr(-4)}</p>,
+            <p>{game.status.player2.substr(0, 5)}...{game.status.player2.substr(-4)}</p>,
+            <p>{game.status.betAmount / 10**18 * 2} ETH / {game.status.betAmount / 10**18} ETH</p>,
+            game.status.gameOver == true ? <p><Tag color="red" text="Game End" /></p> : game.status.player2 == 0 ? <p><Tag color="green" text="waiting for game" /></p> : <p><Tag color="blue" text="in game" /></p>,
+            game.status.winner == 0 ? <p></p> : <p>{game.status.winner.substr(0, 5)}...{game.status.winner.substr(-4)}</p>,
+          ]
+        )
+        console.log(temp)
+        
+      })
+      setGameTable(temp);
+    }
+    
 
     const gameAddressListDeployedNetwork = GameAddressListContract.networks[networkId];
     const gameAddressListContract = new web3.eth.Contract(
@@ -118,6 +124,64 @@ const App = () => {
       })
       setGameTable(temp);
     });
+
+    const gameItemDeployedNetwork = GameItemContract.networks[networkId];
+    let gameItemContract = new web3.eth.Contract(
+      GameItemContract.abi,
+      gameItemDeployedNetwork && gameItemDeployedNetwork.address,
+    )
+    let gameItemTemp = [];
+    let myGameItemTemp = [];
+    let isMainItemSet = false;
+    for(let i = 1; i <= 7; i++) {
+      
+      let data = await gameItemContract.methods.uri(i).call();
+      let myQuantity = await gameItemContract.methods.balanceOf(
+        accounts[0],
+        i
+      ).call();
+      let tempIndex = i - 1;
+      let minted = await gameItemContract.methods.minted(tempIndex).call();
+      // console.log(minted)
+      let supplies = await gameItemContract.methods.supplies(tempIndex).call();
+      console.log(myQuantity)
+      // console.log(supplies)
+      // temp.push(data);
+      let response = await fetch(data);
+      console.log(response)
+      let responseJson = await response.json();
+      console.log(responseJson)
+      let tempJson = {
+        "tokenId": i,
+        "json": responseJson,
+        "myQuantity": myQuantity,
+        "minted": minted,
+        "supplies": supplies
+      }
+      console.log(tempJson)
+      gameItemTemp.push(tempJson)
+      if(myQuantity > 0) {
+        let tempJson = {
+          "tokenId": i,
+          "json": responseJson,
+          "myQuantity": myQuantity,
+        }
+        myGameItemTemp.push(tempJson);
+        if(isMainItemSet == false) {
+          setMainItem(tempJson);
+          isMainItemSet = !isMainItemSet;
+        }
+        
+        console.log(tempJson)
+      }
+      if(i == 7) {
+        console.log(gameItemTemp)
+        setGameItemJson(gameItemTemp);
+        setMyGameItem(myGameItemTemp);
+      }
+    }
+    
+    
   }
 
   const getGameAddressList = async (web3, networkId) => {
@@ -302,13 +366,117 @@ const App = () => {
 
   }
 
-  const test = () => {
-    console.log(gameAddressList);
-    console.log(gameList);
-    console.log(gameTable);
-    console.log(currentGameAddress);
+  const mint = async () => {
+    const gameItemDeployedNetwork = GameItemContract.networks[networkId];
+    let gameItemContract = new web3.eth.Contract(
+      GameItemContract.abi,
+      gameItemDeployedNetwork && gameItemDeployedNetwork.address,
+    )
+    gameItemContract.methods.mint('1', '1').send({from: accounts[0], value: web3.utils.toWei('0.005')});
+  }
+
+  const buyGameItem = async (tokenId) => {
+    const gameItemDeployedNetwork = GameItemContract.networks[networkId];
+    let gameItemContract = new web3.eth.Contract(
+      GameItemContract.abi,
+      gameItemDeployedNetwork && gameItemDeployedNetwork.address,
+    )
+    gameItemContract.methods.mint(tokenId, 1).send({from: accounts[0], value: web3.utils.toWei('0.005')});
+  }
+
+  const gameItemList = gameItemJson.map((item) => 
+    <div
+      id="shop"
+      style={{
+        width: '250px'
+      }}
+      key={item.tokenId}
+    >
+      <Card
+        id="card"
+        onClick={function noRefCheck(){}}
+        setIsSelected={function noRefCheck(){}}
+      >
+        {item.json.name} - {item.json.description}
+        <div>
+          <img className="gameItemImg" src={item.json.image}></img>
+        </div>
+        <p>own : {item.myQuantity}</p>
+        <p>{item.supplies - item.minted} / {item.supplies} left</p>
+        <p>price: 0.05 ETH</p>
+        <Button
+          id="test-button-primary"
+          onClick={() => { buyGameItem(item.tokenId)}}
+          isFullWidth
+          text="Buy now"
+          theme="primary"
+          type="button"
+        />
+      </Card>
+    </div>
+  )
+
+  const myGameItemList = myGameItem.map((item) => 
+    <div
+      id="shop"
+      style={{
+        width: '250px'
+      }}
+      key={item.tokenId}
+    >
+      <Card
+        id="card"
+        onClick={function noRefCheck(){}}
+        setIsSelected={function noRefCheck(){}}
+      >
+        {item.json.name} - {item.json.description}
+        <div>
+          <img className="gameItemImg" src={item.json.image}></img>
+        </div>
+        <p>own : {item.myQuantity}</p>
+        <Button
+          id="test-button-primary"
+          onClick={() => { setMainItem(item)}}
+          isFullWidth
+          text="Set as Main Item"
+          theme="primary"
+          type="button"
+        />
+      </Card>
+    </div>
+  )
+
+
+
+  const test = async () => {
+    // console.log(gameAddressList);
+    // console.log(gameList);
+    // console.log(gameTable);
+    // console.log(currentGameAddress);
     // let a = gameTable.push(['f','d','d','d','a'])
     // setGameTable(a)
+    const gameItemDeployedNetwork = GameItemContract.networks[networkId];
+    let gameItemContract = new web3.eth.Contract(
+      GameItemContract.abi,
+      gameItemDeployedNetwork && gameItemDeployedNetwork.address,
+    )
+    let temp = [];
+    for(let i = 1; i <= 7; i++) {
+      let data = await gameItemContract.methods.uri(i).call();
+      let myQuantity = await gameItemContract.methods.balanceOf(
+        accounts[0],
+        i
+      ).call()
+      console.log(myQuantity)
+      // temp.push(data);
+      let response = await fetch(data);
+      let responseJson = await response.json();
+      let tempJson = {
+        "json": responseJson,
+        "myQuantity": myQuantity,
+      }
+      temp.push(tempJson)
+    }
   }
   
 
@@ -465,6 +633,7 @@ const App = () => {
                   }}
                 >
                   <div>
+                    {(mainItem == null) ? 
                     <table>
                       <tr id="tr1">
                         <td onClick={() => {move(0, currentGameAddress)}}>{currentGameBoard[0]}</td>
@@ -481,7 +650,24 @@ const App = () => {
                         <td onClick={() => {move(7, currentGameAddress)}}>{currentGameBoard[7]}</td>
                         <td onClick={() => {move(8, currentGameAddress)}}>{currentGameBoard[8]}</td>
                       </tr>
-                    </table>
+                    </table> : 
+                    <table style={{color: mainItem.json.name.toLowerCase()}}>
+                      <tr id="tr1">
+                        <td onClick={() => {move(0, currentGameAddress)}}>{currentGameBoard[0]}</td>
+                        <td onClick={() => {move(1, currentGameAddress)}}>{currentGameBoard[1]}</td>
+                        <td onClick={() => {move(2, currentGameAddress)}}>{currentGameBoard[2]}</td>
+                      </tr>
+                      <tr id="tr2">
+                        <td onClick={() => {move(3, currentGameAddress)}}>{currentGameBoard[3]}</td>
+                        <td onClick={() => {move(4, currentGameAddress)}}>{currentGameBoard[4]}</td>
+                        <td onClick={() => {move(5, currentGameAddress)}}>{currentGameBoard[5]}</td>
+                      </tr>
+                      <tr id="tr3">
+                        <td onClick={() => {move(6, currentGameAddress)}}>{currentGameBoard[6]}</td>
+                        <td onClick={() => {move(7, currentGameAddress)}}>{currentGameBoard[7]}</td>
+                        <td onClick={() => {move(8, currentGameAddress)}}>{currentGameBoard[8]}</td>
+                      </tr>
+                    </table>}
                     <div id="game-button-outer">
                       {
                         (currentGameStatus.player2 != 0) ?  
@@ -565,6 +751,7 @@ const App = () => {
                     
                     <p>Winner : {currentGameStatus.winner}</p>
                     <p>Prize / BetAmount : {currentGameStatus.betAmount / 10**18 * 2} ETH / {currentGameStatus.betAmount / 10**18} ETH</p>
+                    {mainItem == null ? <p>YourItem : None</p> : <p>Your Item : {mainItem.json.name} - {mainItem.json.description}</p>}
                   </div>
 
                 </div>
@@ -579,12 +766,32 @@ const App = () => {
           tabName="Shop"
           className="Tab"
         >
+          <Typography variant="h2">Erc-1155</Typography>
+          <button onClick={test}>test</button>
+          <button onClick={mint}>mint</button>
+          <p></p>
+          {gameItemList}
         </Tab>
         <Tab
           tabKey={3}
           tabName="My Page"
           className="Tab"
         >
+          <Typography variant="h2">My Items</Typography>
+          <Typography variant="h4">Main Item</Typography>
+          {(mainItem == null) ? <p></p> : <Card
+            id="card"
+            onClick={function noRefCheck(){}}
+            setIsSelected={function noRefCheck(){}}
+          >
+            {mainItem.json.name} - {mainItem.json.description}
+            <div>
+              <img className="gameItemImg" src={mainItem.json.image}></img>
+            </div>
+            <p>own : {mainItem.myQuantity}</p>
+          </Card>}
+          <Typography variant="h4">Items</Typography>
+          {myGameItemList}
         </Tab>
         
       </TabList>
