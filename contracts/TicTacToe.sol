@@ -36,7 +36,7 @@ contract TicTacToe {
 
     function join() public payable {
         require(msg.value == betAmount);
-
+        require(msg.sender != player1);
         player2 = msg.sender;
         whoseTurn = player1;
         emit gameStart();
